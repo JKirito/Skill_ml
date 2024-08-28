@@ -43,8 +43,9 @@ training_args = TrainingArguments(
     output_dir='./results',          # output directory
     evaluation_strategy="epoch",     # evaluation strategy to adopt during training
     learning_rate=2e-5,              # learning rate
-    per_device_train_batch_size=16,  # batch size for training
-    per_device_eval_batch_size=16,   # batch size for evaluation
+    per_device_train_batch_size=4,  # Smaller batch size
+    gradient_accumulation_steps=2,   # Accumulate gradients over 2 steps
+    per_device_eval_batch_size=8,   # batch size for evaluation
     num_train_epochs=3,              # total number of training epochs
     weight_decay=0.01,               # strength of weight decay
 )
@@ -57,6 +58,19 @@ trainer = Trainer(
 )
 
 trainer.train()  # Start training
+
+# Generate predictions on the test dataset
+predictions = trainer.predict(tokenized_test_dataset)
+
+# Extract the predicted labels
+predicted_labels = predictions.predictions.argmax(axis=1)
+
+# Add predictions to the test dataset
+test_dataset = test_dataset.add_column("predicted_label", predicted_labels)
+
+# Print the predictions
+print(test_dataset)
+
 
 
 # # Example usage
